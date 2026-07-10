@@ -61,6 +61,7 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           cd android
+          chmod +x gradlew
           ./gradlew assembleRelease -PversionName=${{ github.event.inputs.version_name }} -PversionCode=${{ github.run_number }}
 
       # کپی کردن خودکار فایل‌های apk به مسیر قدیمی جهت تطابق و اطمینان ۱۰۰ درصدی انتشار
