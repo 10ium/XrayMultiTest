@@ -17,6 +17,18 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Web Application
+        run: npm run build
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -29,21 +41,32 @@ jobs:
         with:
           gradle-version: '8.5' # نسخه پایدار و هماهنگ با پروژه اندروید
 
-      # فرآیند کامپایل ترافیکی با استفاده از دستور سیستم gradle به جای اسکریپت محلی
-      - name: Build with Gradle
-        run: gradle assembleRelease -PversionName=${{ github.event.inputs.version_name }} -PversionCode=${{ github.run_number }}
+      - name: Sync Capacitor Android
+        run: npx cap sync android
 
-      # امضای ریلیز با کلید در صورت تعریف گیت‌هاب سکرتز
-      - name: Sign Release APK
-        if: env.HAS_KEYSTORE == 'true'
+      # امضای ریلیز با کلید در صورت تعریف گیت‌هاب سکرتز قبل از کامپایل گریدل
+      - name: Decrypt and Write Keystore
+        if: ${{ secrets.SIGNING_KEY != '' }}
         env:
-          HAS_KEYSTORE: ${{ secrets.SIGNING_KEY != '' }}
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+        run: |
+          echo "$SIGNING_KEY" | base64 -d > android/app/release.keystore
+
+      # فرآیند کامپایل ترافیکی با استفاده از گریدل محلی پروژه اندروید خروجی خازنی
+      - name: Build with Gradle
+        env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          echo "$SIGNING_KEY" | base64 -d > app/release.keystore
+          cd android
+          ./gradlew assembleRelease -PversionName=${{ github.event.inputs.version_name }} -PversionCode=${{ github.run_number }}
+
+      # کپی کردن خودکار فایل‌های apk به مسیر قدیمی جهت تطابق و اطمینان ۱۰۰ درصدی انتشار
+      - name: Prepare APKs for Release
+        run: |
+          mkdir -p app/build/outputs/apk/release
+          cp android/app/build/outputs/apk/release/*.apk app/build/outputs/apk/release/ || true
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -61,5 +84,6 @@ jobs:
           files: |
             app/build/outputs/apk/release/app-release.apk
             app/build/outputs/apk/release/app-release-unsigned.apk
+            android/app/build/outputs/apk/release/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
