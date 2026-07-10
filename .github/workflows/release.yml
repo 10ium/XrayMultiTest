@@ -42,6 +42,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.5' # نسخه پایدار و هماهنگ با پروژه اندروید
+          validate-wrappers: false
 
       - name: Sync Capacitor Android
         run: npx cap sync android
