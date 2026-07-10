@@ -8,6 +8,12 @@ tasks.register("assembleDebug") {
     }
 }
 
+tasks.register("assembleRelease") {
+    doLast {
+        println("Dummy assembleRelease task for web-only rewrite applet completed successfully.")
+    }
+}
+
 tasks.register("lint") {
     doLast {
         println("Dummy lint task for web-only rewrite applet completed successfully.")
