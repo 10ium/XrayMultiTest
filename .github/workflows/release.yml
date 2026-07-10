@@ -12,6 +12,8 @@ jobs:
   build:
     name: Build Signed APK
     runs-on: ubuntu-latest
+    env:
+      SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
 
     steps:
       - name: Checkout Source Code
@@ -46,9 +48,7 @@ jobs:
 
       # امضای ریلیز با کلید در صورت تعریف گیت‌هاب سکرتز قبل از کامپایل گریدل
       - name: Decrypt and Write Keystore
-        if: ${{ secrets.SIGNING_KEY != '' }}
-        env:
-          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+        if: ${{ env.SIGNING_KEY != '' }}
         run: |
           echo "$SIGNING_KEY" | base64 -d > android/app/release.keystore
 
