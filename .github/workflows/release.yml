@@ -82,6 +82,7 @@ jobs:
             - **توضیحات:** این نسخه به طور خودکار توسط گیت‌هاب اکشن کامپایل و امضا شده است. هسته پیش‌فرض و مکانیزم آپدیت خودکار در نرم‌افزار تعبیه شده است.
           draft: false
           prerelease: false
+          fail_on_unmatched_files: false
           files: |
             app/build/outputs/apk/release/app-release.apk
             app/build/outputs/apk/release/app-release-unsigned.apk
