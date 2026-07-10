@@ -41,7 +41,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.5' # نسخه پایدار و هماهنگ با پروژه اندروید
+          gradle-version: '8.14.3' # هماهنگ با نسخه مورد نیاز پروژه اندروید (8.14.3)
           validate-wrappers: false
 
       - name: Sync Capacitor Android
