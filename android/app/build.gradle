@@ -7,8 +7,8 @@ android {
         applicationId "com.xray.multitest"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode project.hasProperty('versionCode') ? project.property('versionCode').toInteger() : 1
+        versionName project.hasProperty('versionName') ? project.property('versionName').toString() : "1.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              cruncherEnabled = false
@@ -25,6 +25,27 @@ android {
                 storePassword System.getenv("KEYSTORE_PASSWORD") ?: ""
                 keyAlias System.getenv("KEY_ALIAS") ?: ""
                 keyPassword System.getenv("KEY_PASSWORD") ?: ""
+            } else {
+                // Fallback to debug.keystore if we have debug.keystore.base64 at root
+                def debugB64File = file("../../debug.keystore.base64")
+                if (debugB64File.exists()) {
+                    def debugKeystoreFile = file("debug.keystore")
+                    if (!debugKeystoreFile.exists()) {
+                        try {
+                            def base64Content = debugB64File.text.trim()
+                            def decodedBytes = java.util.Base64.getDecoder().decode(base64Content)
+                            debugKeystoreFile.withOutputStream { it.write(decodedBytes) }
+                        } catch (Exception e) {
+                            println("Failed to decode fallback debug.keystore: " + e.getMessage())
+                        }
+                    }
+                    if (debugKeystoreFile.exists()) {
+                        storeFile debugKeystoreFile
+                        storePassword "android"
+                        keyAlias "androiddebugkey"
+                        keyPassword "android"
+                    }
+                }
             }
         }
     }
@@ -33,9 +54,17 @@ android {
             minifyEnabled false
             crunchPngs false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            if (file("release.keystore").exists()) {
+            // Sign with release.keystore or fallback debug.keystore if either exists
+            if (file("release.keystore").exists() || file("debug.keystore").exists() || file("../../debug.keystore.base64").exists()) {
                 signingConfig signingConfigs.release
             }
+        }
+    }
+    applicationVariants.all { variant ->
+        variant.outputs.all {
+            def appName = "XrayMultiTest"
+            def versionNameStr = variant.versionName
+            outputFileName = "${appName}-v${versionNameStr}-${variant.buildType.name}.apk"
         }
     }
 }
