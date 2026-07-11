@@ -26,25 +26,54 @@ android {
                 keyAlias System.getenv("KEY_ALIAS") ?: ""
                 keyPassword System.getenv("KEY_PASSWORD") ?: ""
             } else {
-                // Fallback to debug.keystore if we have debug.keystore.base64 at root
+                def debugKeystoreFile = file("debug.keystore")
+                // 1. Try decoding from debug.keystore.base64
                 def debugB64File = file("../../debug.keystore.base64")
-                if (debugB64File.exists()) {
-                    def debugKeystoreFile = file("debug.keystore")
-                    if (!debugKeystoreFile.exists()) {
-                        try {
-                            def base64Content = debugB64File.text.trim()
-                            def decodedBytes = java.util.Base64.getDecoder().decode(base64Content)
-                            debugKeystoreFile.withOutputStream { it.write(decodedBytes) }
-                        } catch (Exception e) {
-                            println("Failed to decode fallback debug.keystore: " + e.getMessage())
+                if (debugB64File.exists() && !debugKeystoreFile.exists()) {
+                    try {
+                        def base64Content = debugB64File.text.trim()
+                        def decodedBytes = java.util.Base64.getDecoder().decode(base64Content)
+                        debugKeystoreFile.withOutputStream { it.write(decodedBytes) }
+                        println("Successfully decoded fallback debug.keystore from base64")
+                    } catch (Exception e) {
+                        println("Failed to decode fallback debug.keystore: " + e.getMessage())
+                    }
+                }
+                
+                // 2. If it still doesn't exist, dynamically generate a fresh keystore
+                if (!debugKeystoreFile.exists()) {
+                    try {
+                        println("No signing keystore found. Dynamically generating debug.keystore...")
+                        def cmd = [
+                            "keytool", "-genkey", "-v",
+                            "-keystore", debugKeystoreFile.absolutePath,
+                            "-alias", "androiddebugkey",
+                            "-keyalg", "RSA",
+                            "-keysize", "2048",
+                            "-validity", "10000",
+                            "-storepass", "android",
+                            "-keypass", "android",
+                            "-dname", "CN=Android Debug,O=Android,C=US"
+                        ]
+                        def process = cmd.execute()
+                        process.waitFor()
+                        if (process.exitValue() != 0) {
+                            println("Error generating dynamic keystore: " + process.err.text)
+                        } else {
+                            println("Successfully generated dynamic fallback debug.keystore!")
                         }
+                    } catch (Exception e) {
+                        println("Failed to execute keytool: " + e.getMessage())
                     }
-                    if (debugKeystoreFile.exists()) {
-                        storeFile debugKeystoreFile
-                        storePassword "android"
-                        keyAlias "androiddebugkey"
-                        keyPassword "android"
-                    }
+                }
+
+                if (debugKeystoreFile.exists()) {
+                    storeFile debugKeystoreFile
+                    storePassword "android"
+                    keyAlias "androiddebugkey"
+                    keyPassword "android"
+                } else {
+                    println("WARNING: debug.keystore could not be resolved or generated!")
                 }
             }
         }
@@ -54,10 +83,7 @@ android {
             minifyEnabled false
             crunchPngs false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            // Sign with release.keystore or fallback debug.keystore if either exists
-            if (file("release.keystore").exists() || file("debug.keystore").exists() || file("../../debug.keystore.base64").exists()) {
-                signingConfig signingConfigs.release
-            }
+            signingConfig signingConfigs.release
         }
     }
     applicationVariants.all { variant ->
