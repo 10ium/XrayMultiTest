@@ -439,6 +439,13 @@ export const XrayManager = {
       speedTestProtocol?: string;
       realDelayUrl?: string;
       speedTestUrl?: string;
+      activePingProtocols?: {
+        incyPing: { enabled: boolean; timeout: number; target: string; method: string };
+        tcpConnect: { enabled: boolean; timeout: number; count: number };
+        httpGet: { enabled: boolean; timeout: number; target: string; userAgent: string };
+        httpHead: { enabled: boolean; timeout: number; target: string; keepAlive: boolean };
+        icmpPing: { enabled: boolean; timeout: number; size: number };
+      };
     },
     selectedSites: { domain: string; displayName: string }[],
     onProgress: (index: number, result: TestResult) => void
@@ -506,6 +513,40 @@ export const XrayManager = {
           result.smartScore = 0.0;
           onProgress(idx, { ...result });
           return;
+        }
+
+        // Simulated Ping Protocols calculations
+        if (settings.activePingProtocols) {
+          result.pingProtocolResults = {};
+          const protocols = settings.activePingProtocols;
+
+          // simulated small wait time for these ping protocols
+          await new Promise(resolve => setTimeout(resolve, 80 + (seed % 100)));
+
+          if (protocols.incyPing.enabled) {
+            const delay = tcpPing > 0 ? (tcpPing + 25 + (seed % 80)) : -1;
+            result.pingProtocolResults['INCY Ping'] = (delay > 0 && delay <= protocols.incyPing.timeout) ? delay : -1;
+          }
+
+          if (protocols.tcpConnect.enabled) {
+            const delay = tcpPing > 0 ? (tcpPing + (seed % 10)) : -1;
+            result.pingProtocolResults['TCP Connect'] = (delay > 0 && delay <= protocols.tcpConnect.timeout) ? delay : -1;
+          }
+
+          if (protocols.httpGet.enabled) {
+            const delay = tcpPing > 0 ? (tcpPing + 55 + (seed % 140)) : -1;
+            result.pingProtocolResults['HTTP GET'] = (delay > 0 && delay <= protocols.httpGet.timeout) ? delay : -1;
+          }
+
+          if (protocols.httpHead.enabled) {
+            const delay = tcpPing > 0 ? (tcpPing + 40 + (seed % 95)) : -1;
+            result.pingProtocolResults['HTTP HEAD'] = (delay > 0 && delay <= protocols.httpHead.timeout) ? delay : -1;
+          }
+
+          if (protocols.icmpPing.enabled) {
+            const delay = tcpPing > 0 ? Math.max(5, tcpPing - 20 - (seed % 15)) : -1;
+            result.pingProtocolResults['ICMP Ping'] = (delay > 0 && delay <= protocols.icmpPing.timeout) ? delay : -1;
+          }
         }
 
         // 2. Jitter Check (scaled according to custom jitter ping count)

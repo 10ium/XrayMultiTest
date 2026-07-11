@@ -66,6 +66,20 @@ export const PersianTranslation: Translation = {
   cancelWebsiteBtn: "لغو",
   websiteNamePlaceholder: "نام وب‌سایت (مثال: یوتیوب)",
   websiteDomainPlaceholder: "دامنه آدرس (مثال: youtube.com)",
+
+  // New Ping Protocols Translation Fields
+  pingSettingsTitle: "تنظیمات پینگ (Ping settings)",
+  pingProtocolLabel: "پروتکل پینگ (Ping protocol)",
+  incyPingLabel: "INCY Ping (HTTP GET)",
+  tcpConnectLabel: "TCP Connect (TCP recommended)",
+  httpGetLabel: "HTTP GET (HTTP GET)",
+  httpHeadLabel: "HTTP HEAD (HTTP HEAD)",
+  icmpPingLabel: "ICMP Ping (ICMP)",
+  pingTimeoutMs: "زمان انتظار پینگ (میلی‌ثانیه)",
+  pingTargetUrl: "آدرس مقصد پینگ",
+  pingCount: "تعداد دفعات تست",
+  packetSize: "اندازه بسته (بایت)",
+  profileLabel: "پروفایل پارامترها"
 };
 
 export const EnglishTranslation: Translation = {
@@ -134,4 +148,18 @@ export const EnglishTranslation: Translation = {
   cancelWebsiteBtn: "Cancel",
   websiteNamePlaceholder: "Website Name (e.g. Telegram)",
   websiteDomainPlaceholder: "Domain URL (e.g. telegram.org)",
+
+  // New Ping Protocols Translation Fields
+  pingSettingsTitle: "Ping settings",
+  pingProtocolLabel: "Ping protocol",
+  incyPingLabel: "INCY Ping (HTTP GET)",
+  tcpConnectLabel: "TCP Connect (TCP recommended)",
+  httpGetLabel: "HTTP GET (HTTP GET)",
+  httpHeadLabel: "HTTP HEAD (HTTP HEAD)",
+  icmpPingLabel: "ICMP Ping (ICMP)",
+  pingTimeoutMs: "Ping Timeout (ms)",
+  pingTargetUrl: "Target URL / IP",
+  pingCount: "Test Count",
+  packetSize: "Packet Size (bytes)",
+  profileLabel: "Parameters Profile"
 };

@@ -95,6 +95,7 @@ export interface TestResult {
   siteReports: DiagnosticReport[];
   isHealthy: boolean;
   smartScore: number;
+  pingProtocolResults?: Record<string, number>; // protocol name -> delay ms (-1 for failed/disabled)
 }
 
 export interface Translation {
@@ -163,4 +164,18 @@ export interface Translation {
   cancelWebsiteBtn: string;
   websiteNamePlaceholder: string;
   websiteDomainPlaceholder: string;
+
+  // New Ping Protocols Translation Fields
+  pingSettingsTitle: string;
+  pingProtocolLabel: string;
+  incyPingLabel: string;
+  tcpConnectLabel: string;
+  httpGetLabel: string;
+  httpHeadLabel: string;
+  icmpPingLabel: string;
+  pingTimeoutMs: string;
+  pingTargetUrl: string;
+  pingCount: string;
+  packetSize: string;
+  profileLabel: string;
 }

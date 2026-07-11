@@ -4,7 +4,7 @@ import {
   Languages, Cpu, RefreshCw, Download, Clipboard, FileText, Link, 
   Settings, Sliders, Play, Trash2, Copy, Save, AlertCircle, 
   Globe, Zap, ArrowUpDown, ChevronDown, CheckSquare, Square, Info,
-  Plus, X
+  Plus, X, Activity
 } from 'lucide-react';
 import { XrayConfig, TestResult, TestTarget } from './types';
 import { PersianTranslation, EnglishTranslation } from './Localization';
@@ -120,6 +120,30 @@ export default function App() {
   });
   const [speedTestProtocolInput, setSpeedTestProtocolInput] = useState(() => localStorage.getItem('speed_test_protocol') || 'HTTP');
 
+  // 5.5. Five Ping Protocols States
+  const [isIncyPingEnabled, setIsIncyPingEnabled] = useState(() => localStorage.getItem('ping_incy_enabled') !== 'false');
+  const [incyPingTimeout, setIncyPingTimeout] = useState(() => localStorage.getItem('ping_incy_timeout') || '2000');
+  const [incyPingTarget, setIncyPingTarget] = useState(() => localStorage.getItem('ping_incy_target') || 'https://cp.cloudflare.com/generate_204');
+  const [incyPingMethod, setIncyPingMethod] = useState(() => localStorage.getItem('ping_incy_method') || 'GET');
+
+  const [isTcpConnectEnabled, setIsTcpConnectEnabled] = useState(() => localStorage.getItem('ping_tcp_enabled') !== 'false');
+  const [tcpConnectTimeout, setTcpConnectTimeout] = useState(() => localStorage.getItem('ping_tcp_timeout') || '2500');
+  const [tcpConnectCount, setTcpConnectCount] = useState(() => localStorage.getItem('ping_tcp_count') || '3');
+
+  const [isHttpGetEnabled, setIsHttpGetEnabled] = useState(() => localStorage.getItem('ping_get_enabled') !== 'false');
+  const [httpGetTimeout, setHttpGetTimeout] = useState(() => localStorage.getItem('ping_get_timeout') || '5000');
+  const [httpGetTarget, setHttpGetTarget] = useState(() => localStorage.getItem('ping_get_target') || 'https://www.google.com/generate_204');
+  const [httpGetUserAgent, setHttpGetUserAgent] = useState(() => localStorage.getItem('ping_get_ua') || 'Mozilla/5.0 (Balanced; desktop)');
+
+  const [isHttpHeadEnabled, setIsHttpHeadEnabled] = useState(() => localStorage.getItem('ping_head_enabled') !== 'false');
+  const [httpHeadTimeout, setHttpHeadTimeout] = useState(() => localStorage.getItem('ping_head_timeout') || '3000');
+  const [httpHeadTarget, setHttpHeadTarget] = useState(() => localStorage.getItem('ping_head_target') || 'https://www.gstatic.com/generate_204');
+  const [httpHeadKeepAlive, setHttpHeadKeepAlive] = useState(() => localStorage.getItem('ping_head_ka') !== 'false');
+
+  const [isIcmpPingEnabled, setIsIcmpPingEnabled] = useState(() => localStorage.getItem('ping_icmp_enabled') !== 'false');
+  const [icmpPingTimeout, setIcmpPingTimeout] = useState(() => localStorage.getItem('ping_icmp_timeout') || '1500');
+  const [icmpPingSize, setIcmpPingSize] = useState(() => localStorage.getItem('ping_icmp_size') || '64');
+
   // 6. Websites Targets States
   const [testTargets, setTestTargets] = useState<TestTarget[]>(() => {
     const saved = localStorage.getItem('test_targets_list');
@@ -165,6 +189,21 @@ export default function App() {
       setSpeedTestUrlInput('http://speed.cloudflare.com/__down?bytes=1048576');
       setSpeedTestProtocolInput('HTTP');
       setSpeedTimeoutInput('5000');
+
+      // Five ping protocols Ultra calibration
+      setIncyPingTimeout('1200');
+      setIncyPingTarget('https://cp.cloudflare.com/generate_204');
+      setIncyPingMethod('GET');
+      setTcpConnectTimeout('1500');
+      setTcpConnectCount('2');
+      setHttpGetTimeout('2000');
+      setHttpGetTarget('https://www.google.com/generate_204');
+      setHttpGetUserAgent('Mozilla/5.0 (Ultra; mobile)');
+      setHttpHeadTimeout('1800');
+      setHttpHeadTarget('https://www.gstatic.com/generate_204');
+      setHttpHeadKeepAlive(true);
+      setIcmpPingTimeout('1000');
+      setIcmpPingSize('32');
     } else if (preset === 'balanced') {
       setPingTimeoutInput('2500');
       setRealDelayTimeoutInput('5000');
@@ -174,6 +213,21 @@ export default function App() {
       setSpeedTestUrlInput('http://speed.cloudflare.com/__down?bytes=2097152');
       setSpeedTestProtocolInput('HTTP');
       setSpeedTimeoutInput('10000');
+
+      // Five ping protocols Balanced calibration
+      setIncyPingTimeout('2000');
+      setIncyPingTarget('https://cp.cloudflare.com/generate_204');
+      setIncyPingMethod('GET');
+      setTcpConnectTimeout('2500');
+      setTcpConnectCount('3');
+      setHttpGetTimeout('5000');
+      setHttpGetTarget('https://www.google.com/generate_204');
+      setHttpGetUserAgent('Mozilla/5.0 (Balanced; desktop)');
+      setHttpHeadTimeout('3000');
+      setHttpHeadTarget('https://www.gstatic.com/generate_204');
+      setHttpHeadKeepAlive(true);
+      setIcmpPingTimeout('1500');
+      setIcmpPingSize('64');
     } else if (preset === 'stable') {
       setPingTimeoutInput('4000');
       setRealDelayTimeoutInput('8000');
@@ -183,6 +237,21 @@ export default function App() {
       setSpeedTestUrlInput('https://speed.cloudflare.com/__down?bytes=5242880');
       setSpeedTestProtocolInput('HTTPS');
       setSpeedTimeoutInput('15000');
+
+      // Five ping protocols Stable calibration
+      setIncyPingTimeout('4000');
+      setIncyPingTarget('https://cp.cloudflare.com/generate_204');
+      setIncyPingMethod('GET');
+      setTcpConnectTimeout('4000');
+      setTcpConnectCount('5');
+      setHttpGetTimeout('8000');
+      setHttpGetTarget('https://www.google.com/generate_204');
+      setHttpGetUserAgent('Mozilla/5.0 (Stable; heavy)');
+      setHttpHeadTimeout('5000');
+      setHttpHeadTarget('https://www.gstatic.com/generate_204');
+      setHttpHeadKeepAlive(true);
+      setIcmpPingTimeout('3000');
+      setIcmpPingSize('128');
     }
   };
 
@@ -279,6 +348,26 @@ export default function App() {
     localStorage.setItem('fragment_preset', fragmentPreset);
     localStorage.setItem('copy_limit_mode', copyLimitMode);
     localStorage.setItem('copy_limit_count', copyLimitInput);
+
+    // Sync new ping protocols parameters
+    localStorage.setItem('ping_incy_enabled', String(isIncyPingEnabled));
+    localStorage.setItem('ping_incy_timeout', incyPingTimeout);
+    localStorage.setItem('ping_incy_target', incyPingTarget);
+    localStorage.setItem('ping_incy_method', incyPingMethod);
+    localStorage.setItem('ping_tcp_enabled', String(isTcpConnectEnabled));
+    localStorage.setItem('ping_tcp_timeout', tcpConnectTimeout);
+    localStorage.setItem('ping_tcp_count', tcpConnectCount);
+    localStorage.setItem('ping_get_enabled', String(isHttpGetEnabled));
+    localStorage.setItem('ping_get_timeout', httpGetTimeout);
+    localStorage.setItem('ping_get_target', httpGetTarget);
+    localStorage.setItem('ping_get_ua', httpGetUserAgent);
+    localStorage.setItem('ping_head_enabled', String(isHttpHeadEnabled));
+    localStorage.setItem('ping_head_timeout', httpHeadTimeout);
+    localStorage.setItem('ping_head_target', httpHeadTarget);
+    localStorage.setItem('ping_head_ka', String(httpHeadKeepAlive));
+    localStorage.setItem('ping_icmp_enabled', String(isIcmpPingEnabled));
+    localStorage.setItem('ping_icmp_timeout', icmpPingTimeout);
+    localStorage.setItem('ping_icmp_size', icmpPingSize);
   }, [
     testPreset, isTcpPingChecked, isJitterChecked, isRealDelayChecked, isWebsiteReachChecked,
     isDownloadSpeedChecked, isUploadSpeedChecked, speedTestUrlInput, realDelayUrlInput,
@@ -286,7 +375,14 @@ export default function App() {
     testTargets, isFragmentEnabled, fragmentLengthInput, fragmentIntervalInput,
     isMuxEnabled, muxConcurrencyInput, xudpConcurrencyInput, jitterPingCountInput, speedTestVolumeInput,
     isCustomVolume, customVolumeMB,
-    speedTestProtocolInput, fragmentPreset, copyLimitMode, copyLimitInput
+    speedTestProtocolInput, fragmentPreset, copyLimitMode, copyLimitInput,
+    
+    // Five ping protocols dependencies
+    isIncyPingEnabled, incyPingTimeout, incyPingTarget, incyPingMethod,
+    isTcpConnectEnabled, tcpConnectTimeout, tcpConnectCount,
+    isHttpGetEnabled, httpGetTimeout, httpGetTarget, httpGetUserAgent,
+    isHttpHeadEnabled, httpHeadTimeout, httpHeadTarget, httpHeadKeepAlive,
+    isIcmpPingEnabled, icmpPingTimeout, icmpPingSize
   ]);
 
   // Toast helper
@@ -435,7 +531,37 @@ export default function App() {
       speedTestVolume: parseInt(speedTestVolumeInput) || 2,
       speedTestProtocol: speedTestProtocolInput || "HTTP",
       realDelayUrl: realDelayUrlInput,
-      speedTestUrl: speedTestUrlInput
+      speedTestUrl: speedTestUrlInput,
+      activePingProtocols: {
+        incyPing: {
+          enabled: isIncyPingEnabled,
+          timeout: parseInt(incyPingTimeout) || 2000,
+          target: incyPingTarget,
+          method: incyPingMethod
+        },
+        tcpConnect: {
+          enabled: isTcpConnectEnabled,
+          timeout: parseInt(tcpConnectTimeout) || 2500,
+          count: parseInt(tcpConnectCount) || 3
+        },
+        httpGet: {
+          enabled: isHttpGetEnabled,
+          timeout: parseInt(httpGetTimeout) || 5000,
+          target: httpGetTarget,
+          userAgent: httpGetUserAgent
+        },
+        httpHead: {
+          enabled: isHttpHeadEnabled,
+          timeout: parseInt(httpHeadTimeout) || 3000,
+          target: httpHeadTarget,
+          keepAlive: String(httpHeadKeepAlive) === 'true'
+        },
+        icmpPing: {
+          enabled: isIcmpPingEnabled,
+          timeout: parseInt(icmpPingTimeout) || 1500,
+          size: parseInt(icmpPingSize) || 64
+        }
+      }
     };
 
     // Staggered execution
@@ -701,246 +827,214 @@ export default function App() {
               <div className="mt-2 text-[10px] text-neutral-500 font-mono text-center leading-normal">
                 {testPreset === 'ultra' && (lang === 'FA' ? "پینگ کوتاه، تست سریع، همزمانی بالا" : "Fast pings, swift test, high concurrency")}
                 {testPreset === 'balanced' && (lang === 'FA' ? "تنظیمات استاندارد بهینه برای کارهای روزمرگی" : "Standard balanced parameters for general use")}
-                {testPreset === 'stable' && (lang === 'FA' ? "تست سنگین با سمپل‌های جیتر بیشتر و با دقت فوق العاده" : "Heavy tests with high jitter samples & precise timing")}
+                {testPreset === 'stable' && (lang === 'FA' ? "تست سنگین با سمپل‌های جیتر بیشتر با دقت فوق العاده" : "Heavy tests with high jitter samples & precise timing")}
                 {testPreset === 'custom' && (lang === 'FA' ? "متغیرها و پارامترها به دلخواه شما سفارشی شده‌اند" : "Custom parameters modified manually by you")}
               </div>
             </div>
 
-            {/* Test Selection Checkboxes */}
-            <div className="space-y-3 mb-5 border-b border-neutral-800/50 pb-4">
-              <label className="flex items-center gap-3 cursor-pointer select-none group text-xs text-neutral-300">
-                <button onClick={() => setIsTcpPingChecked(!isTcpPingChecked)} className="text-[#03DAC6]">
-                  {isTcpPingChecked ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5 text-neutral-600" />}
-                </button>
-                <span className="group-hover:text-white transition-colors">تست TCP Ping (تأخیر خام) / raw TCP Ping</span>
-              </label>
+            {/* Unified Test Engine Suite */}
+            <div className="space-y-3 mb-5">
+              <span className="block text-[11px] font-mono text-neutral-400 uppercase tracking-wider font-bold mb-1">
+                {lang === 'FA' ? "پیکربندی ماژول‌های ارزیابی" : "Diagnostics Engine Modules"}
+              </span>
 
-              <label className="flex items-center gap-3 cursor-pointer select-none group text-xs text-neutral-300">
-                <button onClick={() => setIsJitterChecked(!isJitterChecked)} className="text-[#03DAC6]">
-                  {isJitterChecked ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5 text-neutral-600" />}
-                </button>
-                <span className="group-hover:text-white transition-colors">تست جیتر (Jitter Delay Variance)</span>
-              </label>
-
-              <label className="flex items-center gap-3 cursor-pointer select-none group text-xs text-neutral-300">
-                <button onClick={() => setIsRealDelayChecked(!isRealDelayChecked)} className="text-[#03DAC6]">
-                  {isRealDelayChecked ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5 text-neutral-600" />}
-                </button>
-                <span className="group-hover:text-white transition-colors">تست تاخیر واقعی (HTTP Real Delay via Proxy)</span>
-              </label>
-
-              <label className="flex items-center gap-3 cursor-pointer select-none group text-xs text-neutral-300">
-                <button onClick={() => setIsWebsiteReachChecked(!isWebsiteReachChecked)} className="text-[#03DAC6]">
-                  {isWebsiteReachChecked ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5 text-neutral-600" />}
-                </button>
-                <span className="group-hover:text-white transition-colors">بررسی دسترسی به وب‌سایت‌های منتخب</span>
-              </label>
-
-              <label className="flex items-center gap-3 cursor-pointer select-none group text-xs text-neutral-300">
-                <button onClick={() => setIsDownloadSpeedChecked(!isDownloadSpeedChecked)} className="text-[#03DAC6]">
-                  {isDownloadSpeedChecked ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5 text-neutral-600" />}
-                </button>
-                <span className="group-hover:text-white transition-colors">تست سرعت دانلود (Download speed test in Mbps)</span>
-              </label>
-
-              <label className="flex items-center gap-3 cursor-pointer select-none group text-xs text-neutral-300">
-                <button onClick={() => setIsUploadSpeedChecked(!isUploadSpeedChecked)} className="text-[#03DAC6]">
-                  {isUploadSpeedChecked ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5 text-neutral-600" />}
-                </button>
-                <span className="group-hover:text-white transition-colors">تست سرعت آپلود (Upload speed test in Mbps)</span>
-              </label>
-            </div>
-
-            {/* Custom URLs and parameters */}
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-mono text-neutral-400 uppercase mb-1.5">{lang === 'FA' ? "مهلت پینگ" : "Ping Timeout"}</label>
-                  <input 
-                    type="number" 
-                    value={pingTimeoutInput}
-                    onChange={e => {
-                      setPingTimeoutInput(e.target.value);
-                      setTestPreset('custom');
-                    }}
-                    className="w-full px-3 py-2 bg-[#121212] border border-neutral-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-[#6200EE]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-mono text-neutral-400 uppercase mb-1.5">{lang === 'FA' ? "مهلت تاخیر واقعی" : "Real Delay Timeout"}</label>
-                  <input 
-                    type="number" 
-                    value={realDelayTimeoutInput}
-                    onChange={e => {
-                      setRealDelayTimeoutInput(e.target.value);
-                      setTestPreset('custom');
-                    }}
-                    className="w-full px-3 py-2 bg-[#121212] border border-neutral-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-[#6200EE]"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-mono text-neutral-400 uppercase mb-1.5">{strings.localSocksPort}</label>
-                  <input 
-                    type="number" 
-                    value={socksPortInput}
-                    onChange={e => setSocksPortInput(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#121212] border border-neutral-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-[#6200EE]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-mono text-neutral-400 uppercase mb-1.5">{lang === 'FA' ? "تعداد همزمان" : "Concurrency limit"}</label>
-                  <input 
-                    type="number" 
-                    value={concurrencyInput}
-                    onChange={e => {
-                      setConcurrencyInput(e.target.value);
-                      setTestPreset('custom');
-                    }}
-                    className="w-full px-3 py-2 bg-[#121212] border border-neutral-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-[#6200EE]"
-                  />
-                </div>
-              </div>
-
-              {/* Extra Custom Testing Variables Grid */}
-              <div className="border-t border-neutral-800/50 pt-4 mt-2">
-                <span className="block text-[10px] font-mono text-neutral-400 uppercase mb-2">
-                  {lang === 'FA' ? "پارامترهای کاستوم تست" : "Custom Testing Variables"}
-                </span>
-                <div className="grid grid-cols-3 gap-2">
-                  <div>
-                    <label className="block text-[10px] font-mono text-neutral-400 mb-1">
-                      {lang === 'FA' ? "سمپل جیتر" : "Jitter Pings"}
-                    </label>
-                    <input 
-                      type="number" 
-                      value={jitterPingCountInput}
-                      onChange={e => {
-                        setJitterPingCountInput(e.target.value);
-                        setTestPreset('custom');
-                      }}
-                      className="w-full px-2 py-1.5 bg-[#121212] border border-neutral-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-[#6200EE]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-mono text-neutral-400 mb-1">
-                      {lang === 'FA' ? "حجم دانلود" : "Volume Weight"}
-                    </label>
-                    <select
-                      value={isCustomVolume ? "custom" : speedTestVolumeInput}
-                      onChange={e => {
-                        const val = e.target.value;
-                        if (val === "custom") {
-                          setIsCustomVolume(true);
-                          setSpeedTestVolumeInput(customVolumeMB);
-                          localStorage.setItem('speed_test_volume', customVolumeMB);
-                          const bytes = Math.round((parseFloat(customVolumeMB) || 15) * 1024 * 1024);
-                          setSpeedTestUrlInput(`http://speed.cloudflare.com/__down?bytes=${bytes}`);
-                        } else {
-                          setIsCustomVolume(false);
-                          setSpeedTestVolumeInput(val);
-                          localStorage.setItem('speed_test_volume', val);
-                          const bytes = parseInt(val) * 1024 * 1024;
-                          setSpeedTestUrlInput(`http://speed.cloudflare.com/__down?bytes=${bytes}`);
-                        }
-                        setTestPreset('custom');
-                      }}
-                      className="w-full px-1.5 py-1.5 bg-[#121212] border border-neutral-800 rounded-lg text-[11px] font-mono text-white focus:outline-none focus:border-[#6200EE]"
-                    >
-                      <option value="1">1 MB</option>
-                      <option value="2">2 MB</option>
-                      <option value="5">5 MB</option>
-                      <option value="10">10 MB</option>
-                      <option value="custom">{lang === 'FA' ? "سفارشی..." : "Custom..."}</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-mono text-neutral-400 mb-1">
-                      {lang === 'FA' ? "پروتکل" : "Protocol"}
-                    </label>
-                    <select
-                      value={speedTestProtocolInput}
-                      onChange={e => {
-                        setSpeedTestProtocolInput(e.target.value);
-                        setTestPreset('custom');
-                      }}
-                      className="w-full px-1.5 py-1.5 bg-[#121212] border border-neutral-800 rounded-lg text-[11px] font-mono text-white focus:outline-none focus:border-[#6200EE]"
-                    >
-                      <option value="HTTP">HTTP</option>
-                      <option value="HTTPS">HTTPS (TLS)</option>
-                    </select>
-                  </div>
-                </div>
-
-                {isCustomVolume && (
-                  <div className="mt-2.5 bg-[#1A1A1A]/50 p-2 border border-neutral-800/60 rounded-xl flex items-center justify-between gap-3 animate-fadeIn">
-                    <span className="text-[11px] text-neutral-400">
-                      {lang === 'FA' ? "حجم دلخواه دانلود (مگابایت):" : "Custom Download Vol (MB):"}
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                      <input
-                        type="number"
-                        min="0.1"
-                        step="0.5"
-                        value={customVolumeMB}
-                        onChange={e => {
-                          const val = e.target.value;
-                          setCustomVolumeMB(val);
-                          setSpeedTestVolumeInput(val);
-                          localStorage.setItem('speed_test_volume', val);
-                          const num = parseFloat(val) || 15;
-                          const bytes = Math.round(num * 1024 * 1024);
-                          setSpeedTestUrlInput(`http://speed.cloudflare.com/__down?bytes=${bytes}`);
-                          setTestPreset('custom');
-                        }}
-                        className="w-16 px-1.5 py-1 bg-[#121212] border border-[#6200EE]/30 rounded text-center text-xs font-mono font-bold text-[#03DAC6] focus:outline-none focus:border-[#03DAC6]"
-                      />
-                      <span className="text-[10px] font-mono text-neutral-500">MB</span>
+              {/* 1. TCP Ping (Raw) */}
+              <div className="bg-[#121212]/40 border border-neutral-800/80 rounded-xl overflow-hidden transition-all duration-200">
+                <div 
+                  onClick={() => {
+                    setIsTcpPingChecked(!isTcpPingChecked);
+                    setTestPreset('custom');
+                  }}
+                  className="flex items-center justify-between p-3 cursor-pointer select-none hover:bg-neutral-800/20"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Activity className={`w-4 h-4 ${isTcpPingChecked ? 'text-[#03DAC6]' : 'text-neutral-500'}`} />
+                    <div className="text-left">
+                      <span className="block text-xs text-neutral-200 font-bold">
+                        {lang === 'FA' ? "تست TCP Ping (تأخیر خام)" : "Raw TCP Ping Latency"}
+                      </span>
+                      <span className="block text-[9px] text-neutral-500">
+                        {lang === 'FA' ? "سنجش اتصال لایه انتقال به سرور" : "Measures raw TCP connection delay"}
+                      </span>
                     </div>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded-md ${isTcpPingChecked ? 'bg-[#03DAC6]/10 text-[#03DAC6] border border-[#03DAC6]/20' : 'bg-neutral-800/50 text-neutral-500 border border-neutral-800'}`}>
+                      {isTcpPingChecked ? (lang === 'FA' ? 'فعال' : 'ACTIVE') : (lang === 'FA' ? 'خاموش' : 'DISABLED')}
+                    </span>
+                    <button className="text-[#03DAC6]">
+                      {isTcpPingChecked ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4 text-neutral-600" />}
+                    </button>
+                  </div>
+                </div>
+                {isTcpPingChecked && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="px-3 pb-3 pt-2.5 border-t border-neutral-800/40 bg-[#121212]/15 text-[11px] grid grid-cols-2 gap-3"
+                  >
+                    <div className="col-span-2">
+                      <span className="text-neutral-400 block mb-1 font-mono">{lang === 'FA' ? "زمان انتظار (میلی‌ثانیه):" : "Ping Timeout (ms):"}</span>
+                      <input 
+                        type="number"
+                        value={pingTimeoutInput}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={e => {
+                          setPingTimeoutInput(e.target.value);
+                          setTestPreset('custom');
+                        }}
+                        className="w-full px-2.5 py-1.5 bg-[#1A1A1A] border border-neutral-800 rounded-lg text-white font-mono focus:outline-none focus:border-[#6200EE]"
+                      />
+                    </div>
+                  </motion.div>
                 )}
               </div>
 
-              {/* URL Selection Panel for Diagnostics */}
-              <div className="border-t border-neutral-800/50 pt-4 mt-4 space-y-3">
-                <span className="block text-[10px] font-mono text-neutral-400 uppercase font-bold tracking-wider">
-                  {lang === 'FA' ? "تنظیم سرورهای ارزیابی سرعت و تاخیر" : "Diagnostic Target Server URLs"}
-                </span>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                  {/* Real Delay Test Server */}
-                  <div className="space-y-1.5">
-                    <label className="block text-[10px] font-mono text-neutral-400">
-                      {lang === 'FA' ? "سرور تست تاخیر واقعی (HTTP Delay Server)" : "HTTP Real Delay Server"}
-                    </label>
-                    <div className="space-y-1.5">
-                      <select
-                        value={REAL_DELAY_SERVERS.some(s => s.url === realDelayUrlInput) ? realDelayUrlInput : "custom"}
+              {/* 2. TCP Connect (Multi) */}
+              <div className="bg-[#121212]/40 border border-neutral-800/80 rounded-xl overflow-hidden transition-all duration-200">
+                <div 
+                  onClick={() => {
+                    setIsTcpConnectEnabled(!isTcpConnectEnabled);
+                    setTestPreset('custom');
+                  }}
+                  className="flex items-center justify-between p-3 cursor-pointer select-none hover:bg-neutral-800/20"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Sliders className={`w-4 h-4 ${isTcpConnectEnabled ? 'text-[#03DAC6]' : 'text-neutral-500'}`} />
+                    <div className="text-left">
+                      <span className="block text-xs text-neutral-200 font-bold">
+                        {lang === 'FA' ? "تست اتصال چندگانه TCP Connect" : "TCP Connect Multi-Ping"}
+                      </span>
+                      <span className="block text-[9px] text-neutral-500">
+                        {lang === 'FA' ? "ارزیابی خط با بسته‌های موازی TCP" : "Multiple parallel TCP connection attempts"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded-md ${isTcpConnectEnabled ? 'bg-[#03DAC6]/10 text-[#03DAC6] border border-[#03DAC6]/20' : 'bg-neutral-800/50 text-neutral-500 border border-neutral-800'}`}>
+                      {isTcpConnectEnabled ? (lang === 'FA' ? 'فعال' : 'ACTIVE') : (lang === 'FA' ? 'خاموش' : 'DISABLED')}
+                    </span>
+                    <button className="text-[#03DAC6]">
+                      {isTcpConnectEnabled ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4 text-neutral-600" />}
+                    </button>
+                  </div>
+                </div>
+                {isTcpConnectEnabled && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="px-3 pb-3 pt-2.5 border-t border-neutral-800/40 bg-[#121212]/15 text-[11px] grid grid-cols-2 gap-3"
+                  >
+                    <div>
+                      <span className="text-neutral-400 block mb-1 font-mono">{lang === 'FA' ? "زمان انتظار (ms):" : "Timeout (ms):"}</span>
+                      <input 
+                        type="number"
+                        value={tcpConnectTimeout}
+                        onClick={(e) => e.stopPropagation()}
                         onChange={e => {
-                          const val = e.target.value;
-                          if (val !== "custom") {
-                            setRealDelayUrlInput(val);
-                            localStorage.setItem('url_real_delay', val);
-                          } else {
-                            setRealDelayUrlInput("custom");
-                          }
+                          setTcpConnectTimeout(e.target.value);
                           setTestPreset('custom');
                         }}
-                        className="w-full px-2.5 py-1.5 bg-[#121212] border border-neutral-800 rounded-lg text-xs font-sans text-neutral-200 focus:outline-none focus:border-[#6200EE]"
-                      >
-                        {REAL_DELAY_SERVERS.map(s => (
-                          <option key={s.url} value={s.url}>
-                            {s.url === "custom" 
-                              ? (lang === 'FA' ? "لینک سفارشی (دستی)" : "Custom URL (Manual)")
-                              : `${s.name}`}
-                          </option>
-                        ))}
-                      </select>
+                        className="w-full px-2.5 py-1.5 bg-[#1A1A1A] border border-neutral-800 rounded-lg text-white font-mono focus:outline-none focus:border-[#6200EE]"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-neutral-400 block mb-1 font-mono">{lang === 'FA' ? "تعداد تلاش:" : "Ping Count:"}</span>
+                      <input 
+                        type="number"
+                        value={tcpConnectCount}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={e => {
+                          setTcpConnectCount(e.target.value);
+                          setTestPreset('custom');
+                        }}
+                        className="w-full px-2.5 py-1.5 bg-[#1A1A1A] border border-neutral-800 rounded-lg text-white font-mono focus:outline-none focus:border-[#6200EE]"
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </div>
 
-                      {(!REAL_DELAY_SERVERS.some(s => s.url === realDelayUrlInput) || realDelayUrlInput === "custom") && (
+              {/* 3. HTTP Real Delay (Proxy) */}
+              <div className="bg-[#121212]/40 border border-neutral-800/80 rounded-xl overflow-hidden transition-all duration-200">
+                <div 
+                  onClick={() => {
+                    setIsRealDelayChecked(!isRealDelayChecked);
+                    setTestPreset('custom');
+                  }}
+                  className="flex items-center justify-between p-3 cursor-pointer select-none hover:bg-neutral-800/20"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Globe className={`w-4 h-4 ${isRealDelayChecked ? 'text-[#03DAC6]' : 'text-neutral-500'}`} />
+                    <div className="text-left">
+                      <span className="block text-xs text-neutral-200 font-bold">
+                        {lang === 'FA' ? "تست تأخیر واقعی HTTP Real Delay" : "HTTP Real Delay via Proxy"}
+                      </span>
+                      <span className="block text-[9px] text-neutral-500">
+                        {lang === 'FA' ? "برقراری اتصال کامل HTTP با سرور CDN" : "Full HTTP handshake with custom target url"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded-md ${isRealDelayChecked ? 'bg-[#03DAC6]/10 text-[#03DAC6] border border-[#03DAC6]/20' : 'bg-neutral-800/50 text-neutral-500 border border-neutral-800'}`}>
+                      {isRealDelayChecked ? (lang === 'FA' ? 'فعال' : 'ACTIVE') : (lang === 'FA' ? 'خاموش' : 'DISABLED')}
+                    </span>
+                    <button className="text-[#03DAC6]">
+                      {isRealDelayChecked ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4 text-neutral-600" />}
+                    </button>
+                  </div>
+                </div>
+                {isRealDelayChecked && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="px-3 pb-3 pt-2.5 border-t border-neutral-800/40 bg-[#121212]/15 text-[11px] space-y-3"
+                  >
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="col-span-2 sm:col-span-1">
+                        <span className="text-neutral-400 block mb-1 font-mono">{lang === 'FA' ? "سرور انتخابی:" : "Server Target:"}</span>
+                        <select
+                          value={REAL_DELAY_SERVERS.some(s => s.url === realDelayUrlInput) ? realDelayUrlInput : "custom"}
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={e => {
+                            const val = e.target.value;
+                            if (val !== "custom") {
+                              setRealDelayUrlInput(val);
+                              localStorage.setItem('url_real_delay', val);
+                            } else {
+                              setRealDelayUrlInput("custom");
+                            }
+                            setTestPreset('custom');
+                          }}
+                          className="w-full px-2.5 py-1.5 bg-[#1A1A1A] border border-neutral-800 rounded-lg text-xs font-sans text-neutral-200 focus:outline-none focus:border-[#6200EE]"
+                        >
+                          {REAL_DELAY_SERVERS.map(s => (
+                            <option key={s.url} value={s.url}>
+                              {s.url === "custom" 
+                                ? (lang === 'FA' ? "لینک سفارشی (دستی)" : "Custom URL (Manual)")
+                                : `${s.name}`}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="col-span-2 sm:col-span-1">
+                        <span className="text-neutral-400 block mb-1 font-mono">{lang === 'FA' ? "زمان انتظار (ms):" : "Timeout (ms):"}</span>
+                        <input 
+                          type="number"
+                          value={realDelayTimeoutInput}
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={e => {
+                            setRealDelayTimeoutInput(e.target.value);
+                            setTestPreset('custom');
+                          }}
+                          className="w-full px-2.5 py-1.5 bg-[#1A1A1A] border border-neutral-800 rounded-lg text-white font-mono focus:outline-none focus:border-[#6200EE]"
+                        />
+                      </div>
+                    </div>
+
+                    {(!REAL_DELAY_SERVERS.some(s => s.url === realDelayUrlInput) || realDelayUrlInput === "custom") && (
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <span className="text-neutral-400 block mb-1 font-mono">{lang === 'FA' ? "آدرس سفارشی:" : "Custom URL:"}</span>
                         <input
                           type="text"
                           value={realDelayUrlInput === "custom" ? "" : realDelayUrlInput}
@@ -951,45 +1045,543 @@ export default function App() {
                             setTestPreset('custom');
                           }}
                           placeholder={lang === 'FA' ? "آدرس کامل (مثال: https://google.com/...)" : "Full URL (e.g., https://google.com/...)"}
-                          className="w-full px-2.5 py-1.5 bg-[#121212] border border-[#6200EE]/30 rounded-lg text-xs font-mono text-[#03DAC6] placeholder-neutral-600 focus:outline-none focus:border-[#03DAC6]"
+                          className="w-full px-2.5 py-1.5 bg-[#1A1A1A] border border-[#6200EE]/30 rounded-lg text-xs font-mono text-[#03DAC6] placeholder-neutral-600 focus:outline-none focus:border-[#03DAC6]"
                         />
-                      )}
-                    </div>
+                      </div>
+                    )}
                     {REAL_DELAY_SERVERS.some(s => s.url === realDelayUrlInput) && realDelayUrlInput !== "custom" && (
                       <p className="text-[9px] text-neutral-500 font-mono truncate">{realDelayUrlInput}</p>
                     )}
-                  </div>
+                  </motion.div>
+                )}
+              </div>
 
-                  {/* Download Speed Test Server */}
-                  <div className="space-y-1.5">
-                    <label className="block text-[10px] font-mono text-neutral-400">
-                      {lang === 'FA' ? "سرور تست سرعت دانلود (Download Server)" : "Download Speed Server"}
-                    </label>
-                    <div className="space-y-1.5">
-                      <select
-                        value={SPEED_TEST_SERVERS.some(s => s.url === speedTestUrlInput) ? speedTestUrlInput : "custom"}
+              {/* 4. INCY Ping (HTTP INCY) */}
+              <div className="bg-[#121212]/40 border border-neutral-800/80 rounded-xl overflow-hidden transition-all duration-200">
+                <div 
+                  onClick={() => {
+                    setIsIncyPingEnabled(!isIncyPingEnabled);
+                    setTestPreset('custom');
+                  }}
+                  className="flex items-center justify-between p-3 cursor-pointer select-none hover:bg-neutral-800/20"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Zap className={`w-4 h-4 ${isIncyPingEnabled ? 'text-[#03DAC6]' : 'text-neutral-500'}`} />
+                    <div className="text-left">
+                      <span className="block text-xs text-neutral-200 font-bold">
+                        {lang === 'FA' ? "تست پینگ INCY (درون‌شبکه‌ای)" : "INCY Ping (In-Network Check)"}
+                      </span>
+                      <span className="block text-[9px] text-neutral-500">
+                        {lang === 'FA' ? "سنجش اتصال موازی با هدرهای سبک" : "Parallel connectivity test with minimal payload"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded-md ${isIncyPingEnabled ? 'bg-[#03DAC6]/10 text-[#03DAC6] border border-[#03DAC6]/20' : 'bg-neutral-800/50 text-neutral-500 border border-neutral-800'}`}>
+                      {isIncyPingEnabled ? (lang === 'FA' ? 'فعال' : 'ACTIVE') : (lang === 'FA' ? 'خاموش' : 'DISABLED')}
+                    </span>
+                    <button className="text-[#03DAC6]">
+                      {isIncyPingEnabled ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4 text-neutral-600" />}
+                    </button>
+                  </div>
+                </div>
+                {isIncyPingEnabled && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="px-3 pb-3 pt-2.5 border-t border-neutral-800/40 bg-[#121212]/15 text-[11px] grid grid-cols-2 gap-3"
+                  >
+                    <div>
+                      <span className="text-neutral-400 block mb-1 font-mono">{lang === 'FA' ? "زمان انتظار (ms):" : "Timeout (ms):"}</span>
+                      <input 
+                        type="number"
+                        value={incyPingTimeout}
+                        onClick={(e) => e.stopPropagation()}
                         onChange={e => {
-                          const val = e.target.value;
-                          if (val !== "custom") {
-                            setSpeedTestUrlInput(val);
-                            localStorage.setItem('url_speed_test', val);
-                          } else {
-                            setSpeedTestUrlInput("custom");
-                          }
+                          setIncyPingTimeout(e.target.value);
                           setTestPreset('custom');
                         }}
-                        className="w-full px-2.5 py-1.5 bg-[#121212] border border-neutral-800 rounded-lg text-xs font-sans text-neutral-200 focus:outline-none focus:border-[#6200EE]"
-                      >
-                        {SPEED_TEST_SERVERS.map(s => (
-                          <option key={s.url} value={s.url}>
-                            {s.url === "custom" 
-                              ? (lang === 'FA' ? "لینک سفارشی (دستی)" : "Custom URL (Manual)")
-                              : `${s.name}`}
-                          </option>
-                        ))}
-                      </select>
+                        className="w-full px-2.5 py-1.5 bg-[#1A1A1A] border border-neutral-800 rounded-lg text-white font-mono focus:outline-none focus:border-[#6200EE]"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-neutral-400 block mb-1 font-mono">{lang === 'FA' ? "هدف ارزیابی:" : "Target URL:"}</span>
+                      <input 
+                        type="text"
+                        value={incyPingTarget}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={e => {
+                          setIncyPingTarget(e.target.value);
+                          setTestPreset('custom');
+                        }}
+                        className="w-full px-2.5 py-1.5 bg-[#1A1A1A] border border-neutral-800 rounded-lg text-[#03DAC6] font-mono text-[10px] truncate focus:outline-none focus:border-[#6200EE]"
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </div>
 
-                      {(!SPEED_TEST_SERVERS.some(s => s.url === speedTestUrlInput) || speedTestUrlInput === "custom") && (
+              {/* 5. HTTP GET (Advanced) */}
+              <div className="bg-[#121212]/40 border border-neutral-800/80 rounded-xl overflow-hidden transition-all duration-200">
+                <div 
+                  onClick={() => {
+                    setIsHttpGetEnabled(!isHttpGetEnabled);
+                    setTestPreset('custom');
+                  }}
+                  className="flex items-center justify-between p-3 cursor-pointer select-none hover:bg-neutral-800/20"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Globe className={`w-4 h-4 ${isHttpGetEnabled ? 'text-[#03DAC6]' : 'text-neutral-500'}`} />
+                    <div className="text-left">
+                      <span className="block text-xs text-neutral-200 font-bold">
+                        {lang === 'FA' ? "تست پیشرفته HTTP GET" : "Advanced HTTP GET Test"}
+                      </span>
+                      <span className="block text-[9px] text-neutral-500">
+                        {lang === 'FA' ? "ارسال درخواست کامل GET با مرورگر سفارشی" : "HTTP GET check with custom User-Agent simulation"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded-md ${isHttpGetEnabled ? 'bg-[#03DAC6]/10 text-[#03DAC6] border border-[#03DAC6]/20' : 'bg-neutral-800/50 text-neutral-500 border border-neutral-800'}`}>
+                      {isHttpGetEnabled ? (lang === 'FA' ? 'فعال' : 'ACTIVE') : (lang === 'FA' ? 'خاموش' : 'DISABLED')}
+                    </span>
+                    <button className="text-[#03DAC6]">
+                      {isHttpGetEnabled ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4 text-neutral-600" />}
+                    </button>
+                  </div>
+                </div>
+                {isHttpGetEnabled && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="px-3 pb-3 pt-2.5 border-t border-neutral-800/40 bg-[#121212]/15 text-[11px] space-y-2.5"
+                  >
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <span className="text-neutral-400 block mb-1 font-mono">{lang === 'FA' ? "زمان انتظار (ms):" : "Timeout (ms):"}</span>
+                        <input 
+                          type="number"
+                          value={httpGetTimeout}
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={e => {
+                            setHttpGetTimeout(e.target.value);
+                            setTestPreset('custom');
+                          }}
+                          className="w-full px-2.5 py-1.5 bg-[#1A1A1A] border border-neutral-800 rounded-lg text-white font-mono focus:outline-none focus:border-[#6200EE]"
+                        />
+                      </div>
+                      <div>
+                        <span className="text-neutral-400 block mb-1 font-mono">{lang === 'FA' ? "هدف ارزیابی:" : "Target URL:"}</span>
+                        <input 
+                          type="text"
+                          value={httpGetTarget}
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={e => {
+                            setHttpGetTarget(e.target.value);
+                            setTestPreset('custom');
+                          }}
+                          className="w-full px-2.5 py-1.5 bg-[#1A1A1A] border border-neutral-800 rounded-lg text-[#03DAC6] font-mono text-[10px] truncate focus:outline-none focus:border-[#6200EE]"
+                        />
+                      </div>
+                    </div>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <span className="text-neutral-400 block mb-1 font-mono">{lang === 'FA' ? "عامل کاربر (User-Agent):" : "User-Agent Header:"}</span>
+                      <input 
+                        type="text"
+                        value={httpGetUserAgent}
+                        onChange={e => {
+                          setHttpGetUserAgent(e.target.value);
+                          setTestPreset('custom');
+                        }}
+                        className="w-full px-2.5 py-1.5 bg-[#1A1A1A] border border-neutral-800 rounded-lg text-white font-mono focus:outline-none focus:border-[#6200EE]"
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+
+              {/* 6. HTTP HEAD (Advanced) */}
+              <div className="bg-[#121212]/40 border border-neutral-800/80 rounded-xl overflow-hidden transition-all duration-200">
+                <div 
+                  onClick={() => {
+                    setIsHttpHeadEnabled(!isHttpHeadEnabled);
+                    setTestPreset('custom');
+                  }}
+                  className="flex items-center justify-between p-3 cursor-pointer select-none hover:bg-neutral-800/20"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Globe className={`w-4 h-4 ${isHttpHeadEnabled ? 'text-[#03DAC6]' : 'text-neutral-500'}`} />
+                    <div className="text-left">
+                      <span className="block text-xs text-neutral-200 font-bold">
+                        {lang === 'FA' ? "تست پیشرفته HTTP HEAD" : "Advanced HTTP HEAD Test"}
+                      </span>
+                      <span className="block text-[9px] text-neutral-500">
+                        {lang === 'FA' ? "ارسال درخواست سبک بدون دانلود بادی" : "HTTP HEAD requests to verify status codes only"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded-md ${isHttpHeadEnabled ? 'bg-[#03DAC6]/10 text-[#03DAC6] border border-[#03DAC6]/20' : 'bg-neutral-800/50 text-neutral-500 border border-neutral-800'}`}>
+                      {isHttpHeadEnabled ? (lang === 'FA' ? 'فعال' : 'ACTIVE') : (lang === 'FA' ? 'خاموش' : 'DISABLED')}
+                    </span>
+                    <button className="text-[#03DAC6]">
+                      {isHttpHeadEnabled ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4 text-neutral-600" />}
+                    </button>
+                  </div>
+                </div>
+                {isHttpHeadEnabled && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="px-3 pb-3 pt-2.5 border-t border-neutral-800/40 bg-[#121212]/15 text-[11px] grid grid-cols-2 gap-3"
+                  >
+                    <div>
+                      <span className="text-neutral-400 block mb-1 font-mono">{lang === 'FA' ? "زمان انتظار (ms):" : "Timeout (ms):"}</span>
+                      <input 
+                        type="number"
+                        value={httpHeadTimeout}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={e => {
+                          setHttpHeadTimeout(e.target.value);
+                          setTestPreset('custom');
+                        }}
+                        className="w-full px-2.5 py-1.5 bg-[#1A1A1A] border border-neutral-800 rounded-lg text-white font-mono focus:outline-none focus:border-[#6200EE]"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-neutral-400 block mb-1 font-mono">{lang === 'FA' ? "هدف ارزیابی:" : "Target URL:"}</span>
+                      <input 
+                        type="text"
+                        value={httpHeadTarget}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={e => {
+                          setHttpHeadTarget(e.target.value);
+                          setTestPreset('custom');
+                        }}
+                        className="w-full px-2.5 py-1.5 bg-[#1A1A1A] border border-neutral-800 rounded-lg text-[#03DAC6] font-mono text-[10px] truncate focus:outline-none focus:border-[#6200EE]"
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+
+              {/* 7. ICMP Ping */}
+              <div className="bg-[#121212]/40 border border-neutral-800/80 rounded-xl overflow-hidden transition-all duration-200">
+                <div 
+                  onClick={() => {
+                    setIsIcmpPingEnabled(!isIcmpPingEnabled);
+                    setTestPreset('custom');
+                  }}
+                  className="flex items-center justify-between p-3 cursor-pointer select-none hover:bg-neutral-800/20"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <ArrowUpDown className={`w-4 h-4 ${isIcmpPingEnabled ? 'text-[#03DAC6]' : 'text-neutral-500'}`} />
+                    <div className="text-left">
+                      <span className="block text-xs text-neutral-200 font-bold">
+                        {lang === 'FA' ? "تست شبیه‌ساز پینگ ICMP" : "Simulated ICMP Ping"}
+                      </span>
+                      <span className="block text-[9px] text-neutral-500">
+                        {lang === 'FA' ? "ارسال بسته‌های استاندارد پژواک ICMP" : "Echo requests to verify network-level packet response"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded-md ${isIcmpPingEnabled ? 'bg-[#03DAC6]/10 text-[#03DAC6] border border-[#03DAC6]/20' : 'bg-neutral-800/50 text-neutral-500 border border-neutral-800'}`}>
+                      {isIcmpPingEnabled ? (lang === 'FA' ? 'فعال' : 'ACTIVE') : (lang === 'FA' ? 'خاموش' : 'DISABLED')}
+                    </span>
+                    <button className="text-[#03DAC6]">
+                      {isIcmpPingEnabled ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4 text-neutral-600" />}
+                    </button>
+                  </div>
+                </div>
+                {isIcmpPingEnabled && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="px-3 pb-3 pt-2.5 border-t border-neutral-800/40 bg-[#121212]/15 text-[11px] grid grid-cols-2 gap-3"
+                  >
+                    <div>
+                      <span className="text-neutral-400 block mb-1 font-mono">{lang === 'FA' ? "زمان انتظار (ms):" : "Timeout (ms):"}</span>
+                      <input 
+                        type="number"
+                        value={icmpPingTimeout}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={e => {
+                          setIcmpPingTimeout(e.target.value);
+                          setTestPreset('custom');
+                        }}
+                        className="w-full px-2.5 py-1.5 bg-[#1A1A1A] border border-neutral-800 rounded-lg text-white font-mono focus:outline-none focus:border-[#6200EE]"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-neutral-400 block mb-1 font-mono">{lang === 'FA' ? "اندازه بسته (بایت):" : "Packet Size (Bytes):"}</span>
+                      <input 
+                        type="number"
+                        value={icmpPingSize}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={e => {
+                          setIcmpPingSize(e.target.value);
+                          setTestPreset('custom');
+                        }}
+                        className="w-full px-2.5 py-1.5 bg-[#1A1A1A] border border-neutral-800 rounded-lg text-white font-mono focus:outline-none focus:border-[#6200EE]"
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+
+              {/* 8. Jitter Check (Variance) */}
+              <div className="bg-[#121212]/40 border border-neutral-800/80 rounded-xl overflow-hidden transition-all duration-200">
+                <div 
+                  onClick={() => {
+                    setIsJitterChecked(!isJitterChecked);
+                    setTestPreset('custom');
+                  }}
+                  className="flex items-center justify-between p-3 cursor-pointer select-none hover:bg-neutral-800/20"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Sliders className={`w-4 h-4 ${isJitterChecked ? 'text-[#03DAC6]' : 'text-neutral-500'}`} />
+                    <div className="text-left">
+                      <span className="block text-xs text-neutral-200 font-bold">
+                        {lang === 'FA' ? "ارزیابی جیتر (نوسان تأخیر)" : "Jitter Variance Analysis"}
+                      </span>
+                      <span className="block text-[9px] text-neutral-500">
+                        {lang === 'FA' ? "تحلیل انحراف استاندارد پاسخ زمانی سرور" : "Tracks packet-to-packet latency jitter"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded-md ${isJitterChecked ? 'bg-[#03DAC6]/10 text-[#03DAC6] border border-[#03DAC6]/20' : 'bg-neutral-800/50 text-neutral-500 border border-neutral-800'}`}>
+                      {isJitterChecked ? (lang === 'FA' ? 'فعال' : 'ACTIVE') : (lang === 'FA' ? 'خاموش' : 'DISABLED')}
+                    </span>
+                    <button className="text-[#03DAC6]">
+                      {isJitterChecked ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4 text-neutral-600" />}
+                    </button>
+                  </div>
+                </div>
+                {isJitterChecked && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="px-3 pb-3 pt-2.5 border-t border-neutral-800/40 bg-[#121212]/15 text-[11px]"
+                  >
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <span className="text-neutral-400 block mb-1 font-mono">{lang === 'FA' ? "تعداد سمپل‌های تستی جیتر (دفعات):" : "Jitter Pings count:"}</span>
+                      <input 
+                        type="number"
+                        value={jitterPingCountInput}
+                        onChange={e => {
+                          setJitterPingCountInput(e.target.value);
+                          setTestPreset('custom');
+                        }}
+                        className="w-full px-2.5 py-1.5 bg-[#1A1A1A] border border-neutral-800 rounded-lg text-white font-mono focus:outline-none focus:border-[#6200EE]"
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+
+              {/* 9. Website Reachability */}
+              <div className="bg-[#121212]/40 border border-neutral-800/80 rounded-xl overflow-hidden transition-all duration-200">
+                <div 
+                  onClick={() => {
+                    setIsWebsiteReachChecked(!isWebsiteReachChecked);
+                    setTestPreset('custom');
+                  }}
+                  className="flex items-center justify-between p-3 cursor-pointer select-none hover:bg-neutral-800/20"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Globe className={`w-4 h-4 ${isWebsiteReachChecked ? 'text-[#03DAC6]' : 'text-neutral-500'}`} />
+                    <div className="text-left">
+                      <span className="block text-xs text-neutral-200 font-bold">
+                        {lang === 'FA' ? "بررسی دسترسی به دامنه‌های منتخب" : "Selected Websites Reachability"}
+                      </span>
+                      <span className="block text-[9px] text-neutral-500">
+                        {lang === 'FA' ? "سنجش عبور ترافیک سرویس‌های فیلتر شده" : "Verifies access to blocked global websites list"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded-md ${isWebsiteReachChecked ? 'bg-[#03DAC6]/10 text-[#03DAC6] border border-[#03DAC6]/20' : 'bg-neutral-800/50 text-neutral-500 border border-neutral-800'}`}>
+                      {isWebsiteReachChecked ? (lang === 'FA' ? 'فعال' : 'ACTIVE') : (lang === 'FA' ? 'خاموش' : 'DISABLED')}
+                    </span>
+                    <button className="text-[#03DAC6]">
+                      {isWebsiteReachChecked ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4 text-neutral-600" />}
+                    </button>
+                  </div>
+                </div>
+                {isWebsiteReachChecked && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="px-3 pb-3 pt-2.5 border-t border-neutral-800/40 bg-[#121212]/15 text-[11px]"
+                  >
+                    <p className="text-neutral-500 text-[10px] italic">
+                      {lang === 'FA' 
+                        ? "💡 لیست دامنه‌ها به همراه جزئیات را می‌توانید در جعبه اختصاصی پایین صفحه تغییر دهید." 
+                        : "💡 Target domains can be fully managed & updated via the dedicated Websites panel below."}
+                    </p>
+                  </motion.div>
+                )}
+              </div>
+
+              {/* 10. Download Speed Test */}
+              <div className="bg-[#121212]/40 border border-neutral-800/80 rounded-xl overflow-hidden transition-all duration-200">
+                <div 
+                  onClick={() => {
+                    setIsDownloadSpeedChecked(!isDownloadSpeedChecked);
+                    setTestPreset('custom');
+                  }}
+                  className="flex items-center justify-between p-3 cursor-pointer select-none hover:bg-neutral-800/20"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Download className={`w-4 h-4 ${isDownloadSpeedChecked ? 'text-[#03DAC6]' : 'text-neutral-500'}`} />
+                    <div className="text-left">
+                      <span className="block text-xs text-neutral-200 font-bold">
+                        {lang === 'FA' ? "تست سرعت دانلود ترافیکی" : "Download Speed Test"}
+                      </span>
+                      <span className="block text-[9px] text-neutral-500">
+                        {lang === 'FA' ? "اندازه‌گیری پهنای باند واقعی دانلود با بارهای انتخابی" : "Measures absolute download speeds in Mbps"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded-md ${isDownloadSpeedChecked ? 'bg-[#03DAC6]/10 text-[#03DAC6] border border-[#03DAC6]/20' : 'bg-neutral-800/50 text-neutral-500 border border-neutral-800'}`}>
+                      {isDownloadSpeedChecked ? (lang === 'FA' ? 'فعال' : 'ACTIVE') : (lang === 'FA' ? 'خاموش' : 'DISABLED')}
+                    </span>
+                    <button className="text-[#03DAC6]">
+                      {isDownloadSpeedChecked ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4 text-neutral-600" />}
+                    </button>
+                  </div>
+                </div>
+                {isDownloadSpeedChecked && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="px-3 pb-3 pt-2.5 border-t border-neutral-800/40 bg-[#121212]/15 text-[11px] space-y-3"
+                  >
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="col-span-2 sm:col-span-1">
+                        <span className="text-neutral-400 block mb-1 font-mono">{lang === 'FA' ? "سرور تست دانلود:" : "Download Server:"}</span>
+                        <select
+                          value={SPEED_TEST_SERVERS.some(s => s.url === speedTestUrlInput) ? speedTestUrlInput : "custom"}
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={e => {
+                            const val = e.target.value;
+                            if (val !== "custom") {
+                              setSpeedTestUrlInput(val);
+                              localStorage.setItem('url_speed_test', val);
+                            } else {
+                              setSpeedTestUrlInput("custom");
+                            }
+                            setTestPreset('custom');
+                          }}
+                          className="w-full px-2.5 py-1.5 bg-[#1A1A1A] border border-neutral-800 rounded-lg text-xs font-sans text-neutral-200 focus:outline-none focus:border-[#6200EE]"
+                        >
+                          {SPEED_TEST_SERVERS.map(s => (
+                            <option key={s.url} value={s.url}>
+                              {s.url === "custom" 
+                                ? (lang === 'FA' ? "لینک سفارشی (دستی)" : "Custom URL (Manual)")
+                                : `${s.name}`}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="col-span-2 sm:col-span-1">
+                        <span className="text-neutral-400 block mb-1 font-mono">{lang === 'FA' ? "حجم ترافیک آزمایشی:" : "Traffic Weight:"}</span>
+                        <select
+                          value={isCustomVolume ? "custom" : speedTestVolumeInput}
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={e => {
+                            const val = e.target.value;
+                            if (val === "custom") {
+                              setIsCustomVolume(true);
+                              setSpeedTestVolumeInput(customVolumeMB);
+                              localStorage.setItem('speed_test_volume', customVolumeMB);
+                              const bytes = Math.round((parseFloat(customVolumeMB) || 15) * 1024 * 1024);
+                              setSpeedTestUrlInput(`http://speed.cloudflare.com/__down?bytes=${bytes}`);
+                            } else {
+                              setIsCustomVolume(false);
+                              setSpeedTestVolumeInput(val);
+                              localStorage.setItem('speed_test_volume', val);
+                              const bytes = parseInt(val) * 1024 * 1024;
+                              setSpeedTestUrlInput(`http://speed.cloudflare.com/__down?bytes=${bytes}`);
+                            }
+                            setTestPreset('custom');
+                          }}
+                          className="w-full px-2.5 py-1.5 bg-[#1A1A1A] border border-neutral-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-[#6200EE]"
+                        >
+                          <option value="1">1 MB</option>
+                          <option value="2">2 MB</option>
+                          <option value="5">5 MB</option>
+                          <option value="10">10 MB</option>
+                          <option value="custom">{lang === 'FA' ? "سفارشی..." : "Custom..."}</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {isCustomVolume && (
+                      <div className="bg-[#1A1A1A]/80 p-2.5 border border-[#6200EE]/20 rounded-lg flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
+                        <span className="text-[10px] text-neutral-400">
+                          {lang === 'FA' ? "تعیین بایت‌های دلخواه (MB):" : "Custom weight in Megabytes:"}
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="number"
+                            min="0.1"
+                            step="0.5"
+                            value={customVolumeMB}
+                            onChange={e => {
+                              const val = e.target.value;
+                              setCustomVolumeMB(val);
+                              setSpeedTestVolumeInput(val);
+                              localStorage.setItem('speed_test_volume', val);
+                              const num = parseFloat(val) || 15;
+                              const bytes = Math.round(num * 1024 * 1024);
+                              setSpeedTestUrlInput(`http://speed.cloudflare.com/__down?bytes=${bytes}`);
+                              setTestPreset('custom');
+                            }}
+                            className="w-16 px-1.5 py-1 bg-[#121212] border border-[#6200EE]/40 rounded text-center text-xs font-mono font-bold text-[#03DAC6] focus:outline-none"
+                          />
+                          <span className="text-[10px] font-mono text-neutral-500">MB</span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <span className="text-neutral-400 block mb-1 font-mono">{lang === 'FA' ? "پروتکل اتصال:" : "Connection Protocol:"}</span>
+                        <select
+                          value={speedTestProtocolInput}
+                          onChange={e => {
+                            setSpeedTestProtocolInput(e.target.value);
+                            setTestPreset('custom');
+                          }}
+                          className="w-full px-2.5 py-1.5 bg-[#1A1A1A] border border-neutral-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-[#6200EE]"
+                        >
+                          <option value="HTTP">HTTP</option>
+                          <option value="HTTPS">HTTPS (TLS)</option>
+                        </select>
+                      </div>
+
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <span className="text-neutral-400 block mb-1 font-mono">{lang === 'FA' ? "حداکثر مهلت دانلود (ms):" : "Max Download Timeout (ms):"}</span>
+                        <input 
+                          type="number" 
+                          value={speedTimeoutInput}
+                          onChange={e => {
+                            setSpeedTimeoutInput(e.target.value);
+                            setTestPreset('custom');
+                          }}
+                          className="w-full px-2.5 py-1.5 bg-[#1A1A1A] border border-neutral-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-[#6200EE]"
+                        />
+                      </div>
+                    </div>
+
+                    {(!SPEED_TEST_SERVERS.some(s => s.url === speedTestUrlInput) || speedTestUrlInput === "custom") && (
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <span className="text-neutral-400 block mb-1 font-mono">{lang === 'FA' ? "لینک مستقیم دانلود سفارشی:" : "Custom Download Direct URL:"}</span>
                         <input
                           type="text"
                           value={speedTestUrlInput === "custom" ? "" : speedTestUrlInput}
@@ -999,15 +1591,91 @@ export default function App() {
                             localStorage.setItem('url_speed_test', val);
                             setTestPreset('custom');
                           }}
-                          placeholder={lang === 'FA' ? "لینک دانلود تستی (مستقیم)..." : "Direct download URL..."}
-                          className="w-full px-2.5 py-1.5 bg-[#121212] border border-[#6200EE]/30 rounded-lg text-xs font-mono text-[#03DAC6] placeholder-neutral-600 focus:outline-none focus:border-[#03DAC6]"
+                          placeholder={lang === 'FA' ? "لینک دانلود تستی..." : "Direct download URL..."}
+                          className="w-full px-2.5 py-1.5 bg-[#1A1A1A] border border-[#6200EE]/30 rounded-lg text-xs font-mono text-[#03DAC6] placeholder-neutral-600 focus:outline-none focus:border-[#03DAC6]"
                         />
-                      )}
-                    </div>
+                      </div>
+                    )}
                     {SPEED_TEST_SERVERS.some(s => s.url === speedTestUrlInput) && speedTestUrlInput !== "custom" && (
                       <p className="text-[9px] text-neutral-500 font-mono truncate">{speedTestUrlInput}</p>
                     )}
+                  </motion.div>
+                )}
+              </div>
+
+              {/* 11. Upload Speed Test */}
+              <div className="bg-[#121212]/40 border border-neutral-800/80 rounded-xl overflow-hidden transition-all duration-200">
+                <div 
+                  onClick={() => {
+                    setIsUploadSpeedChecked(!isUploadSpeedChecked);
+                    setTestPreset('custom');
+                  }}
+                  className="flex items-center justify-between p-3 cursor-pointer select-none hover:bg-neutral-800/20"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <ArrowUpDown className={`w-4 h-4 ${isUploadSpeedChecked ? 'text-[#03DAC6]' : 'text-neutral-500'}`} />
+                    <div className="text-left">
+                      <span className="block text-xs text-neutral-200 font-bold">
+                        {lang === 'FA' ? "تست سرعت آپلود ترافیکی" : "Upload Speed Test"}
+                      </span>
+                      <span className="block text-[9px] text-neutral-500">
+                        {lang === 'FA' ? "سنجش پهنای باند بارگذاری بر روی تونل پروکسی" : "Simulated upload speed test in Mbps"}
+                      </span>
+                    </div>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded-md ${isUploadSpeedChecked ? 'bg-[#03DAC6]/10 text-[#03DAC6] border border-[#03DAC6]/20' : 'bg-neutral-800/50 text-neutral-500 border border-neutral-800'}`}>
+                      {isUploadSpeedChecked ? (lang === 'FA' ? 'فعال' : 'ACTIVE') : (lang === 'FA' ? 'خاموش' : 'DISABLED')}
+                    </span>
+                    <button className="text-[#03DAC6]">
+                      {isUploadSpeedChecked ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4 text-neutral-600" />}
+                    </button>
+                  </div>
+                </div>
+                {isUploadSpeedChecked && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="px-3 pb-3 pt-2.5 border-t border-neutral-800/40 bg-[#121212]/15 text-[11px]"
+                  >
+                    <p className="text-neutral-500 text-[10px] italic">
+                      {lang === 'FA' 
+                        ? "💡 تست آپلود از طریق تونل ترافیکی رفت و برگشت پروکسی با سرور تست بصورت همزمان شبیه‌سازی می‌گردد." 
+                        : "💡 Upload speed measures bandwidth uplink capabilities using the active proxy session tunnel."}
+                    </p>
+                  </motion.div>
+                )}
+              </div>
+
+            </div>
+
+            {/* CARD 3 FOOTER: General Engine Parameters */}
+            <div className="border-t border-neutral-800/50 pt-4 space-y-3">
+              <span className="block text-[11px] font-mono text-neutral-400 uppercase tracking-wider font-bold mb-1">
+                {lang === 'FA' ? "پارامترهای عمومی عیب‌یابی" : "General Engine Parameters"}
+              </span>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-mono text-neutral-500 uppercase mb-1.5">{strings.localSocksPort}</label>
+                  <input 
+                    type="number" 
+                    value={socksPortInput}
+                    onChange={e => setSocksPortInput(e.target.value)}
+                    className="w-full px-3 py-2 bg-[#121212] border border-neutral-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-[#6200EE]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-mono text-neutral-500 uppercase mb-1.5">{lang === 'FA' ? "حد همزمانی تست‌ها" : "Concurrency limit"}</label>
+                  <input 
+                    type="number" 
+                    value={concurrencyInput}
+                    onChange={e => {
+                      setConcurrencyInput(e.target.value);
+                      setTestPreset('custom');
+                    }}
+                    className="w-full px-3 py-2 bg-[#121212] border border-neutral-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-[#6200EE]"
+                  />
                 </div>
               </div>
             </div>
@@ -1486,47 +2154,86 @@ export default function App() {
 
                       {/* Diagnostic details if result is ready */}
                       {res && (
-                        <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-5 gap-2 pt-3 border-t border-neutral-800/50">
-                          
-                          {/* Raw Ping */}
-                          <div className="bg-[#1E1E1E] p-2 rounded-lg border border-neutral-800 text-center space-y-0.5 min-w-0">
-                            <span className="block text-[9px] text-neutral-500 font-bold uppercase font-display truncate">{strings.tcpPingLabel}</span>
-                            <span className={`block text-xs font-mono font-bold truncate ${res.tcpPing > 0 ? 'text-[#03DAC6]' : 'text-red-500'}`}>
-                              {res.tcpPing > 0 ? `${res.tcpPing} ms` : strings.statusFailed}
-                            </span>
+                        <div className="space-y-2.5 pt-3 border-t border-neutral-800/50">
+                          <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-5 gap-2">
+                            
+                            {/* Raw Ping */}
+                            <div className="bg-[#1E1E1E] p-2 rounded-lg border border-neutral-800 text-center space-y-0.5 min-w-0">
+                              <span className="block text-[9px] text-neutral-500 font-bold uppercase font-display truncate">{strings.tcpPingLabel}</span>
+                              <span className={`block text-xs font-mono font-bold truncate ${res.tcpPing > 0 ? 'text-[#03DAC6]' : 'text-red-500'}`}>
+                                {res.tcpPing > 0 ? `${res.tcpPing} ms` : strings.statusFailed}
+                              </span>
+                            </div>
+
+                            {/* Jitter */}
+                            <div className="bg-[#1E1E1E] p-2 rounded-lg border border-neutral-800 text-center space-y-0.5 min-w-0">
+                              <span className="block text-[9px] text-neutral-500 font-bold uppercase font-display truncate">{strings.jitterLabel}</span>
+                              <span className={`block text-xs font-mono font-bold truncate ${res.jitter > 0 ? 'text-amber-400' : 'text-neutral-500'}`}>
+                                {res.jitter > 0 ? `±${res.jitter.toFixed(1)} ms` : strings.statusFailed}
+                              </span>
+                            </div>
+
+                            {/* HTTP Real Delay */}
+                            <div className="bg-[#1E1E1E] p-2 rounded-lg border border-neutral-800 text-center space-y-0.5 min-w-0">
+                              <span className="block text-[9px] text-neutral-500 font-bold uppercase font-display truncate">{strings.realDelayLabel}</span>
+                              <span className={`block text-xs font-mono font-bold truncate ${res.realDelay > 0 ? 'text-emerald-400' : 'text-red-500'}`}>
+                                {res.realDelay > 0 ? `${res.realDelay} ms` : strings.statusFailed}
+                              </span>
+                            </div>
+
+                            {/* Download Speed */}
+                            <div className="bg-[#1E1E1E] p-2 rounded-lg border border-neutral-800 text-center space-y-0.5 min-w-0">
+                              <span className="block text-[9px] text-neutral-500 font-bold uppercase font-display truncate">{strings.downloadSpeedLabel}</span>
+                              <span className={`block text-xs font-mono font-bold truncate ${res.downloadSpeedMbps > 0 ? 'text-blue-400' : 'text-neutral-500'}`}>
+                                {res.downloadSpeedMbps > 0 ? `${res.downloadSpeedMbps.toFixed(1)} Mb/s` : '—'}
+                              </span>
+                            </div>
+
+                            {/* Upload Speed */}
+                            <div className="bg-[#1E1E1E] p-2 rounded-lg border border-neutral-800 text-center space-y-0.5 min-w-0 col-span-2 xs:col-span-1">
+                              <span className="block text-[9px] text-neutral-500 font-bold uppercase font-display truncate">{strings.uploadSpeedLabel}</span>
+                              <span className={`block text-xs font-mono font-bold truncate ${res.uploadSpeedMbps > 0 ? 'text-purple-400' : 'text-neutral-500'}`}>
+                                {res.uploadSpeedMbps > 0 ? `${res.uploadSpeedMbps.toFixed(1)} Mb/s` : '—'}
+                              </span>
+                            </div>
+
                           </div>
 
-                          {/* Jitter */}
-                          <div className="bg-[#1E1E1E] p-2 rounded-lg border border-neutral-800 text-center space-y-0.5 min-w-0">
-                            <span className="block text-[9px] text-neutral-500 font-bold uppercase font-display truncate">{strings.jitterLabel}</span>
-                            <span className={`block text-xs font-mono font-bold truncate ${res.jitter > 0 ? 'text-amber-400' : 'text-neutral-500'}`}>
-                              {res.jitter > 0 ? `±${res.jitter.toFixed(1)} ms` : strings.statusFailed}
-                            </span>
-                          </div>
-
-                          {/* HTTP Real Delay */}
-                          <div className="bg-[#1E1E1E] p-2 rounded-lg border border-neutral-800 text-center space-y-0.5 min-w-0">
-                            <span className="block text-[9px] text-neutral-500 font-bold uppercase font-display truncate">{strings.realDelayLabel}</span>
-                            <span className={`block text-xs font-mono font-bold truncate ${res.realDelay > 0 ? 'text-emerald-400' : 'text-red-500'}`}>
-                              {res.realDelay > 0 ? `${res.realDelay} ms` : strings.statusFailed}
-                            </span>
-                          </div>
-
-                          {/* Download Speed */}
-                          <div className="bg-[#1E1E1E] p-2 rounded-lg border border-neutral-800 text-center space-y-0.5 min-w-0">
-                            <span className="block text-[9px] text-neutral-500 font-bold uppercase font-display truncate">{strings.downloadSpeedLabel}</span>
-                            <span className={`block text-xs font-mono font-bold truncate ${res.downloadSpeedMbps > 0 ? 'text-blue-400' : 'text-neutral-500'}`}>
-                              {res.downloadSpeedMbps > 0 ? `${res.downloadSpeedMbps.toFixed(1)} Mb/s` : '—'}
-                            </span>
-                          </div>
-
-                          {/* Upload Speed */}
-                          <div className="bg-[#1E1E1E] p-2 rounded-lg border border-neutral-800 text-center space-y-0.5 min-w-0 col-span-2 xs:col-span-1">
-                            <span className="block text-[9px] text-neutral-500 font-bold uppercase font-display truncate">{strings.uploadSpeedLabel}</span>
-                            <span className={`block text-xs font-mono font-bold truncate ${res.uploadSpeedMbps > 0 ? 'text-purple-400' : 'text-neutral-500'}`}>
-                              {res.uploadSpeedMbps > 0 ? `${res.uploadSpeedMbps.toFixed(1)} Mb/s` : '—'}
-                            </span>
-                          </div>
+                          {/* Render Multi-Ping protocol test result strip */}
+                          {res.pingProtocolResults && Object.keys(res.pingProtocolResults).length > 0 && (
+                            <div className="bg-[#121212]/50 p-2.5 rounded-xl border border-neutral-800/60 mt-2.5">
+                              <div className="text-[10px] font-mono text-neutral-400 mb-1.5 font-bold uppercase tracking-wider">
+                                {lang === 'FA' ? "تأخیر پروتکل‌های پینگ چندگانه" : "Multi-Protocol Ping Latencies"}
+                              </div>
+                              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                                {Object.entries(res.pingProtocolResults).map(([key, value]: [string, any]) => {
+                                  // Map key nicely if needed
+                                  const label = key === 'incyPing' ? 'INCY Ping' :
+                                                key === 'tcpConnect' ? 'TCP Connect' :
+                                                key === 'httpGet' ? 'HTTP GET' :
+                                                key === 'httpHead' ? 'HTTP HEAD' :
+                                                key === 'icmpPing' ? 'ICMP Ping' : key;
+                                  
+                                  const isOk = typeof value === 'object' && value !== null 
+                                    ? !!value.success 
+                                    : (typeof value === 'number' ? value > 0 : !!value);
+                                  
+                                  const rttMsVal = typeof value === 'object' && value !== null 
+                                    ? value.rttMs 
+                                    : value;
+                                  
+                                  return (
+                                    <div key={key} className="bg-[#1E1E1E]/80 px-2 py-1.5 rounded border border-neutral-800/80 text-center text-[10px]">
+                                      <span className="block text-[8px] text-neutral-400 font-mono font-semibold truncate uppercase">{label}</span>
+                                      <span className={`block font-mono font-bold mt-0.5 truncate ${isOk ? 'text-[#03DAC6]' : 'text-neutral-500'}`}>
+                                        {isOk ? `${rttMsVal} ms` : strings.statusFailed}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
 
                         </div>
                       )}
