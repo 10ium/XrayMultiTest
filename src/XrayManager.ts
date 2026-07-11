@@ -14,6 +14,32 @@ function decodeBase64Safe(str: string): string {
   }
 }
 
+// Splits concatenated configurations that are pasted without line breaks (e.g. vless://...vmess://...)
+function splitConcatenatedLinks(text: string): string[] {
+  const protocolRegex = /(vless|vmess|ss|trojan|socks5|socks|http|https|wireguard|wg|hysteria2|hy2|hysteria|tunnel|xhttp):\/\//gi;
+  const matches: { index: number; protocol: string }[] = [];
+  let match;
+  
+  while ((match = protocolRegex.exec(text)) !== null) {
+    matches.push({ index: match.index, protocol: match[0] });
+  }
+  
+  if (matches.length === 0) {
+    return [text];
+  }
+  
+  const links: string[] = [];
+  for (let i = 0; i < matches.length; i++) {
+    const start = matches[i].index;
+    const end = (i + 1 < matches.length) ? matches[i + 1].index : text.length;
+    const link = text.substring(start, end).trim();
+    if (link) {
+      links.push(link);
+    }
+  }
+  return links;
+}
+
 export const XrayManager = {
   // Cleans up control characters and parses configurations using a robust line-by-line strategy
   parseConfigsFromMessyText(rawText: string): XrayConfig[] {
@@ -29,7 +55,12 @@ export const XrayManager = {
       }
     }
 
-    const lines = targetText.split(/\r?\n/);
+    const rawLines = targetText.split(/\r?\n/);
+    const lines: string[] = [];
+    for (const rawLine of rawLines) {
+      const splitLinks = splitConcatenatedLinks(rawLine);
+      lines.push(...splitLinks);
+    }
 
     for (let line of lines) {
       line = line.trim();

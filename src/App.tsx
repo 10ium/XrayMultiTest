@@ -77,6 +77,7 @@ export default function App() {
 
   // 3. Configurations & Subscription URL States
   const [subUrlInput, setSubUrlInput] = useState('');
+  const [manualPasteText, setManualPasteText] = useState('');
   const [configsList, setConfigsList] = useState<XrayConfig[]>([]);
   const [testResults, setTestResults] = useState<Record<string, TestResult>>({});
   const [isTestingNetwork, setIsTestingNetwork] = useState(false);
@@ -481,20 +482,97 @@ export default function App() {
     reader.readAsText(file);
   };
 
+  const handleImportManualText = () => {
+    if (!manualPasteText.trim()) return;
+    const parsed = XrayManager.parseConfigsFromMessyText(manualPasteText);
+    if (parsed.length > 0) {
+      setConfigsList(prev => {
+        const existingRaws = new Set(prev.map(c => c.raw));
+        const newConfigs = parsed.filter(c => !existingRaws.has(c.raw));
+        return [...prev, ...newConfigs];
+      });
+      setTestResults({});
+      setManualPasteText('');
+      showToast(lang === 'FA' ? `${parsed.length} کانفیگ با موفقیت وارد شد` : `${parsed.length} configs imported successfully`);
+    } else {
+      showToast(lang === 'FA' ? "هیچ کانفیگ معتبری یافت نشد" : "No valid configurations found");
+    }
+  };
+
   const handleImportSubscription = async () => {
     if (!subUrlInput) return;
-    showToast(lang === 'FA' ? "در حال دریافت اشتراک..." : "Fetching subscription...");
+    showToast(lang === 'FA' ? "در حال دریافت و تحلیل لینک اشتراک..." : "Fetching subscription...");
     
-    // Simulate fetching sub link or process raw URL
     try {
-      // In a real environment, we'd proxy. Let's do a simulation with realistic parsing
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      const parsed = XrayManager.parseConfigsFromMessyText(SAMPLE_CONFIGS_RAW); // Fallback to sample list as mock
-      setConfigsList(prev => [...prev, ...parsed]);
-      setTestResults({});
-      showToast(lang === 'FA' ? `${parsed.length} کانفیگ با موفقیت دانلود شد` : `${parsed.length} configs fetched successfully`);
+      let targetUrl = subUrlInput.trim();
+      
+      // تبدیل خودکار لینک معمولی گیت‌هاب (blob) به لینک خام (raw)
+      const githubBlobPattern = /https?:\/\/(?:www\.)?github\.com\/([^/]+)\/([^/]+)\/blob\/([^/]+)\/(.+)/i;
+      const match = targetUrl.match(githubBlobPattern);
+      if (match) {
+        const [, user, repo, branch, path] = match;
+        targetUrl = `https://raw.githubusercontent.com/${user}/${repo}/refs/heads/${branch}/${path}`;
+      }
+      
+      let fetchedText = "";
+      
+      try {
+        // تلاش اول: دانلود مستقیم
+        const response = await fetch(targetUrl);
+        if (!response.ok) throw new Error("Direct fetch failed");
+        fetchedText = await response.text();
+      } catch (directError) {
+        // تلاش دوم: دانلود از طریق پروکسی CORS عمومی AllOrigins در صورت بروز خطای شبکه یا CORS
+        try {
+          const corsProxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+          const response = await fetch(corsProxyUrl);
+          if (response.ok) {
+            fetchedText = await response.text();
+          } else {
+            throw new Error("CORS proxy fetch failed");
+          }
+        } catch (proxyError) {
+          throw new Error("All download attempts failed");
+        }
+      }
+      
+      if (!fetchedText || fetchedText.trim() === "") {
+        throw new Error("Empty response");
+      }
+      
+      // دکود هوشمند اگر کل پاسخ بیس۶۴ شده باشد
+      let parsedText = fetchedText;
+      if (!fetchedText.includes("://")) {
+        try {
+          const cleanedB64 = fetchedText.trim().replace(/[^a-zA-Z0-9+/=_-]/g, "").replace(/-/g, "+").replace(/_/g, "/");
+          const decoded = atob(cleanedB64);
+          if (decoded && decoded.includes("://")) {
+            parsedText = decoded;
+          }
+        } catch (e) {
+          // نگه داشتن متن اصلی
+        }
+      }
+      
+      const parsed = XrayManager.parseConfigsFromMessyText(parsedText);
+      
+      if (parsed.length > 0) {
+        setConfigsList(prev => {
+          const existingRaws = new Set(prev.map(c => c.raw));
+          const newConfigs = parsed.filter(c => !existingRaws.has(c.raw));
+          return [...prev, ...newConfigs];
+        });
+        setTestResults({});
+        showToast(lang === 'FA' ? `${parsed.length} کانفیگ با موفقیت دانلود و اضافه شد` : `${parsed.length} configs parsed and imported successfully`);
+      } else {
+        const parsedFallback = XrayManager.parseConfigsFromMessyText(SAMPLE_CONFIGS_RAW);
+        setConfigsList(prev => [...prev, ...parsedFallback]);
+        showToast(lang === 'FA' ? "کانفیگی یافت نشد؛ کانفیگ‌های نمونه بارگذاری شدند" : "No configs found; loaded sample fallback configs");
+      }
     } catch (e) {
-      showToast(lang === 'FA' ? "خطا در دانلود لینک اشتراک" : "Failed to fetch subscription link");
+      const parsedFallback = XrayManager.parseConfigsFromMessyText(SAMPLE_CONFIGS_RAW);
+      setConfigsList(prev => [...prev, ...parsedFallback]);
+      showToast(lang === 'FA' ? "خطا در اتصال به سرور اشتراک؛ نمونه‌ها بارگذاری شدند" : "Connection failed; sample configs loaded");
     }
   };
 
@@ -502,6 +580,16 @@ export default function App() {
     setConfigsList([]);
     setTestResults({});
     showToast(lang === 'FA' ? "تمامی کانفیگ‌ها حذف شدند" : "All configurations cleared");
+  };
+
+  const handleDeleteConfig = (configRaw: string) => {
+    setConfigsList(prev => prev.filter(c => c.raw !== configRaw));
+    setTestResults(prev => {
+      const copy = { ...prev };
+      delete copy[configRaw];
+      return copy;
+    });
+    showToast(lang === 'FA' ? "کانفیگ حذف شد" : "Configuration deleted");
   };
 
   // 10. Sequential Diagnostic Runner
@@ -1849,6 +1937,25 @@ export default function App() {
               </label>
             </div>
 
+            {/* کادر ورود دستی کانفیگ برای حل کامل باگ عدم دسترسی به کلیپ‌بورد */}
+            <div className="mb-5 bg-[#121212]/30 p-3 rounded-xl border border-neutral-800/40">
+              <textarea
+                value={manualPasteText}
+                onChange={e => setManualPasteText(e.target.value)}
+                placeholder={lang === 'FA' ? "یا کانفیگ‌ها را در این قسمت پیست کنید..." : "Or paste configurations here manually..."}
+                className="w-full h-20 p-2.5 bg-[#121212] border border-neutral-800 rounded-lg text-xs text-white focus:outline-none focus:border-[#6200EE] font-mono resize-none"
+              />
+              {manualPasteText.trim() && (
+                <button
+                  onClick={handleImportManualText}
+                  className="mt-2 w-full flex items-center justify-center gap-2 px-3 py-2 bg-[#03DAC6]/10 hover:bg-[#03DAC6]/20 border border-[#03DAC6]/20 rounded-lg text-xs font-bold text-[#03DAC6] transition-all cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{lang === 'FA' ? "ورود کانفیگ‌های پیست‌شده" : "Import Pasted Configs"}</span>
+                </button>
+              )}
+            </div>
+
             <div className="border-t border-neutral-800/80 pt-4">
               <div className="flex gap-2">
                 <div className="relative flex-1">
@@ -2139,17 +2246,28 @@ export default function App() {
                           <p className="text-[10px] font-mono text-neutral-500 truncate max-w-[160px] xs:max-w-[220px] sm:max-w-[320px] md:max-w-md" title={`${config.address}:${config.port}`}>{config.address}:{config.port}</p>
                         </div>
 
-                        {/* Smart score display */}
-                        {res ? (
-                          <div className="text-right shrink-0">
-                            <div className="text-sm font-black font-mono text-[#03DAC6]">{res.smartScore.toFixed(2)}</div>
-                            <div className="text-[9px] text-neutral-500 uppercase tracking-widest font-mono">Score</div>
-                          </div>
-                        ) : (
-                          <div className="text-xs font-mono text-neutral-600 italic shrink-0">
-                            {isActive ? strings.statusChecking : lang === 'FA' ? "در انتظار تست" : "Pending"}
-                          </div>
-                        )}
+                        {/* Smart score and delete display */}
+                        <div className="flex items-center gap-3 shrink-0">
+                          {res ? (
+                            <div className="text-right shrink-0">
+                              <div className="text-sm font-black font-mono text-[#03DAC6]">{res.smartScore.toFixed(2)}</div>
+                              <div className="text-[9px] text-neutral-500 uppercase tracking-widest font-mono">Score</div>
+                            </div>
+                          ) : (
+                            <div className="text-xs font-mono text-neutral-600 italic shrink-0">
+                              {isActive ? strings.statusChecking : lang === 'FA' ? "در انتظار تست" : "Pending"}
+                            </div>
+                          )}
+
+                          <button
+                            onClick={() => handleDeleteConfig(config.raw)}
+                            disabled={isTestingNetwork}
+                            className="p-1.5 hover:bg-red-950/40 text-neutral-500 hover:text-red-400 rounded-lg transition-all active:scale-90 disabled:opacity-30 cursor-pointer shrink-0"
+                            title={lang === 'FA' ? "حذف این کانفیگ" : "Delete this config"}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
 
                       {/* Diagnostic details if result is ready */}
